@@ -46,7 +46,7 @@ def refresh_authentication():
         "client_secret": CLIENT_SECRET,
     }
     response = requests.post(token_url, headers=headers, data=data)
-    response = check_http_response(response, "AuthError", CONFIG)
+    response = check_http_response(response, "AuthError")
     if response["status"] == CONFIG["longterm_settings"]["statuscodes"]["Success"]:
         update_access_token(response["return"])
         return response
