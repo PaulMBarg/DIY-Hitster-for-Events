@@ -1,0 +1,13 @@
+{
+    "longterm_settings": {
+        "spotify_api": {
+            "search": "https://api.spotify.com/v1/search",
+            "token": "https://accounts.spotify.com/api/token"
+        },
+        "statuscodes": {
+            "Success": 200,
+            "QueringError": 400,
+            "AuthError": 401
+        }
+    }
+}
