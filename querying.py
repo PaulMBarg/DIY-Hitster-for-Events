@@ -1,10 +1,11 @@
 import requests
 import output
+import authentication as auth
 from error_fowarding import include_status
 from importing_config import import_config
 
 def spotify_query(searchterm=str, 
-                  returned_types: list=["artists, playlist, albums"], #@todo Does not work with just one single element
+                  returned_types: list=["artist", "track", "album"], #@todo Does not work with just one single element
                   market: str="DE",
                   limit: int=10):
 
@@ -16,7 +17,8 @@ def spotify_query(searchterm=str,
               "type": ','.join(returned_types),
               "market": market, 
               "limit": limit}
-    response = requests.get(api_url, params=params)
+    headers = {"Authorization": f"Bearer {auth.authenticate()}"}
+    response = requests.get(api_url, params=params, headers=headers)
     
     if hasattr(response, "error"):
         output = f"Error {response['error']['status']}: {response['error']['message']}."
@@ -25,6 +27,6 @@ def spotify_query(searchterm=str,
         return include_status(response.json(), statuscodes["Success"])
 
 #if spotify query raises an unexpected error, it is not gonna be fowarded
-response = spotify_query("Alligatoah")
+response = spotify_query(searchterm="Halo")
 output.echo("print", response)
 
