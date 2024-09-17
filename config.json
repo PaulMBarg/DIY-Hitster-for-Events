@@ -9,5 +9,12 @@
             "QueringError": 400,
             "AuthError": 401
         }
+    },
+    "spotify_code": {
+        "download_link_prefix": "https://www.spotifycodes.com/downloadCode.php?",
+        "image_format": "jpeg",
+        "background_color": "FFFFFF",
+        "bar_color": "black",
+        "image_size_in_px": 820
     }
 }
