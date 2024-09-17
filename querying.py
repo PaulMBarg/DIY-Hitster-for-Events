@@ -1,5 +1,4 @@
 import requests
-import output
 import authentication as auth
 from error_fowarding import include_status
 from importing_config import import_config
@@ -25,8 +24,4 @@ def spotify_query(searchterm=str,
         return include_status(output, statuscodes["QueringError"])
     else:
         return include_status(response.json(), statuscodes["Success"])
-
-#if spotify query raises an unexpected error, it is not gonna be fowarded
-response = spotify_query(searchterm="Halo")
-output.echo("print", response)
 
