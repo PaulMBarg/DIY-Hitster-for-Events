@@ -242,9 +242,9 @@
                     listItem.innerHTML = `
                         <div>
                             <div class="track-title">${track.title}</div>
-                            <div class="track-info">Artist: ${track.artist}</div>
+                            <div class="track-info">von ${track.artist}</div>
                         </div>
-                        <div class="track-info">${track.album}</div>
+                        <div class="track-info">${track.release_year}</div>
                     `;
                     listItem.addEventListener('click', () => {
                         openPopup(track);
@@ -256,10 +256,11 @@
 
         function openPopup(track) {
             document.getElementById('popup-content').innerHTML = `
-                <img src="${track.album_cover_url}" alt="${track.album} Album Cover">
+                <img src="${track.album_cover_url}" alt=" ">
                 <div class="track-title">${track.title}</div>
-                <div class="track-info">Artist: ${track.artist}</div>
+                <div class="track-info">Interpret: ${track.artist}</div>
                 <div class="track-info">Album: ${track.album}</div>
+                <div class="track-info">Jahr: ${track.release_year}</div>
             `;
             document.getElementById('popup').style.display = 'block';
             document.getElementById('overlay').style.display = 'block';
