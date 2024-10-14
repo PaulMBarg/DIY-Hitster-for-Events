@@ -22,11 +22,15 @@ while running:
     for index, song in enumerate(response["return"]["tracks"]["items"]):
         song_title = song["name"]
         artists = [artist["name"] for artist in song["artists"]]
+        try: 
+            release_date = song["album"]["release_date"]
+        except:
+            release_date = "unknown"
         if len(artists) > 1:
             artists = ", ".join(artists[:-1]) + " und " + str(artists[-1])
         else: 
             artists = artists[0]
-        print(f"{index+1}: {song_title}, {artists}")
+        print(f"{index+1}: {song_title}, {artists}, {release_date}")
     
     index_answer = input("Welchen der Songs meinst du? Schreibe einfach die Nummer vor dem Song: ")
 
