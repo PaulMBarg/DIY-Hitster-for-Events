@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Music Search</title>
+    <style>
+        /* Allgemeines Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        /* Container für das Zwei-Spalten Layout */
+        .container {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 30px;
+            gap: 50px; /* Adjust this value to increase/decrease the spacing */
+        }
+
+        /* Linke Spalte (Suchleiste und Ergebnisse) */
+        .left-column {
+            width: 40%;
+        }
+
+        /* Rechte Spalte (Erklärung und Bilder) */
+        .right-column {
+            width: 55%;
+            background-color: #282828;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        /* Erklärung in der rechten Spalte */
+        .explanation {
+            font-size: 18px;
+            color: #b3b3b3;
+            line-height: 1.6;
+        }
+
+        /* Styling für die Bilder in der Erklärung */
+        .explanation img {
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+
+        /* Suchleiste */
+        .search-bar {
+            width: 90%;
+            padding: 10px;
+            margin: 20px 0;
+            border-radius: 50px;
+            border: none;
+            background-color: #404040;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        /* Button Styling */
+        button {
+            padding: 12px 25px;
+            background-color: #1DB954;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1ed760;
+        }
+
+        /* Bereich für die Songs */
+        #response {
+            margin-top: 20px;
+            max-height: 600px; /* Maximale Höhe für das Scrollen */
+            overflow-y: auto;
+        }
+
+        /* Liste für die Songs */
+        .music-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        /* Einzelner Listeneintrag */
+        .music-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #282828;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Songtitel und Infos */
+        .track-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1DB954;
+        }
+
+        .track-info {
+            font-size: 16px;
+            color: #b3b3b3;
+        }
+
+        /* Popup Styling */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #282828;
+            padding: 40px;
+            border-radius: 10px;
+            display: none;
+            text-align: center;
+            z-index: 1000;
+            width: 400px;
+        }
+
+        .popup .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: white;
+        }
+
+        /* Albumcover im Popup */
+        .popup img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Popup Button */
+        .popup button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            background-color: #1DB954;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Overlay für Popup */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 500;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Linke Spalte -->
+        <div class="left-column">
+            <h1>Lena & Max | Favorite Songs</h1>
+
+            <!-- Suchleiste -->
+            <input type="text" id="user_input" class="search-bar" placeholder="Suche Song...">
+            <button id="submit-btn">Suche</button>
+
+            <!-- Ergebnisbereich -->
+            <div id="response">
+                <ul id="music-list" class="music-list"></ul>
+            </div>
+        </div>
+
+        <!-- Rechte Spalte -->
+        <div class="right-column">
+            <div class="explanation">
+                <h2>How to Use:</h2>
+                <p>Type the name of a song and click "Submit" to search for tracks. Click on a track to view its details.</p>
+                <h3>Example Albums:</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup-Fenster -->
+    <div id="popup" class="popup">
+        <span class="close" id="close-popup">&times;</span>
+        <div id="popup-content"></div>
+        <button id="print-btn">Drucken</button>
+    </div>
+
+    <!-- Overlay für Popup -->
+    <div id="overlay" class="overlay"></div>
+
+    <script>
+        document.getElementById('submit-btn').addEventListener('click', submitInput);
+        document.getElementById('user_input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                submitInput();
+            }
+        });
+
+        function submitInput() {
+            const userInput = document.getElementById('user_input').value;
+
+            fetch('/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_input: userInput }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const musicList = document.getElementById('music-list');
+                musicList.innerHTML = '';
+
+                data.forEach(track => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <div>
+                            <div class="track-title">${track.title}</div>
+                            <div class="track-info">Artist: ${track.artist}</div>
+                        </div>
+                        <div class="track-info">${track.album}</div>
+                    `;
+                    listItem.addEventListener('click', () => {
+                        openPopup(track);
+                    });
+                    musicList.appendChild(listItem);
+                });
+            });
+        }
+
+        function openPopup(track) {
+            document.getElementById('popup-content').innerHTML = `
+                <img src="${track.album_cover_url}" alt="${track.album} Album Cover">
+                <div class="track-title">${track.title}</div>
+                <div class="track-info">Artist: ${track.artist}</div>
+                <div class="track-info">Album: ${track.album}</div>
+            `;
+            document.getElementById('popup').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        document.getElementById('close-popup').addEventListener('click', function() {
+            document.getElementById('popup').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        });
+
+        document.getElementById('print-btn').addEventListener('click', function() {
+            alert('Drucken-Funktion ausgeführt!');
+        });
+    </script>
+</body>
+</html>
