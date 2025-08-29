@@ -1,4 +1,4 @@
-Based on [Spotify Code One-Click (My Own)](https://github.com/PaulMBarg/Spotify-Code-OneClick/blob/main/README.md?plain=1) and [catprinter](https://github.com/NaitLee/Cat-Printer).
+Based on [Spotify Code One-Click (My Own)](https://github.com/PaulMBarg/Spotify-Code-OneClick) and [catprinter](https://github.com/NaitLee/Cat-Printer).
 
 # DIY Hitster for Events
 
