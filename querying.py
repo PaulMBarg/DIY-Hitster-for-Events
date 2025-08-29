@@ -7,7 +7,7 @@ from importing_config import import_config
 def spotify_query(searchterm=str, 
                   returned_types: list=["artist", "track", "album"], #@todo Does not work with just one single element
                   market: str="DE",
-                  limit: int=10):
+                  limit: int=7):
 
     config = import_config("config.json")
     statuscodes = config["longterm_settings"]["statuscodes"]
@@ -62,12 +62,15 @@ def format_response(response: dict):
 
         #albumcover as url
         try:
-            album_cover = song["album"]["images"][1]["url"]
+            album_cover = song["album"]["images"][0]["url"]
         except KeyError:
             album_cover = "https://image.atsw.de/atsw/production/2024-03/1200x1200px_o_logo_o_schrift.jpg?fm=jpg&w=180&h=180&dpr=2"
             response = requests.get(album_cover)
             if not str(response.status_code).startswith("2"):
                 raise ce.DeprecationError("The generic album cover is not available anymore.")
+        
+        # uri to create download link
+        uri = song["uri"]
 
         songs += [{
             "title": song_title,
@@ -75,6 +78,8 @@ def format_response(response: dict):
             "album": album,
             "release_year": release_year,
             "album_cover_url": album_cover,
+            "uri": uri
         }]
+
 
     return songs

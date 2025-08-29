@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flask Music Search</title>
+    <title>OneClick</title>
     <style>
         /* Allgemeines Styling */
         body {
@@ -18,6 +18,19 @@
             min-height: 100vh;
         }
 
+        .neon-font {
+            font-family: Lato;
+            font-size: 10em;
+            text-align: left;             /* Centering the text */
+            color: white;                   /* Text color */
+            font-size: 45px;                /* Font size */
+            text-shadow: 0 0 10px #fff,     /* White glow */
+                        0 0 20px #1DB954, /* Magenta glow */
+                        0 0 30px #1DB954, /* Stronger magenta glow */
+                        0 0 40px #1DB954, /* Even stronger magenta glow */
+                        0 0 50px #1DB954;
+        }
+
         /* Container für das Zwei-Spalten Layout */
         .container {
             display: flex;
@@ -30,12 +43,12 @@
 
         /* Linke Spalte (Suchleiste und Ergebnisse) */
         .left-column {
-            width: 40%;
+            width: 50%;
         }
 
         /* Rechte Spalte (Erklärung und Bilder) */
         .right-column {
-            width: 55%;
+            width: 50%;
             background-color: #282828;
             padding: 20px;
             border-radius: 10px;
@@ -107,6 +120,13 @@
             background-color: #282828;
             border-radius: 8px;
             cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition */
+        }
+
+        /* Hover effect */
+        .music-list li:hover {
+            background-color: #5e5e5e; /* Change background color on hover */
+            cursor: pointer; /* Change cursor to pointer */
         }
 
         /* Songtitel und Infos */
@@ -182,7 +202,9 @@
     <div class="container">
         <!-- Linke Spalte -->
         <div class="left-column">
-            <h1>Lena & Max | Favorite Songs</h1>
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:100&effect=neon">
+            <div class="neon-font">Lena & Max | Lieblingslieder</div>
+
 
             <!-- Suchleiste -->
             <input type="text" id="user_input" class="search-bar" placeholder="Suche Song...">
@@ -197,22 +219,60 @@
         <!-- Rechte Spalte -->
         <div class="right-column">
             <div class="explanation">
-                <h2>How to Use:</h2>
-                <p>Type the name of a song and click "Submit" to search for tracks. Click on a track to view its details.</p>
-                <h3>Example Albums:</h3>
+                <h2>Was ist denn das?</h2>
+                    <p>
+                        Hier entsteht eine Wedding-Edition des bekannten Musikspiels 
+                        <span class="track-title">Hitster</span>. Bei dem Spiel werden Songs abgespielt,
+                        die man erraten oder zeitlich einordnen muss.
+                        Ihr könnt jetzt Teil von Lena und Max' persönlichem Hitster
+                        sein, indem ihr einen Song beisteuert.
+                    </p>
+                <h2>Anleitung</h3>
+                    <p>
+                    Los geht's! Hast Du Dir schon einen Song überlegt? Du kannst einen Song
+                    wählen, den Du mit Lena und/oder Max verbindest, aber auch einfach 
+                    Deinen Lieblingssong. Du hast die freie Wahl.
+                        <ol>
+                            <li>Geben einen Song oder Künstler in die Suchleiste ein. </li>
+                            <li>Klicke auf <span class="track-title">Suche</span>.</li>
+                            <li>Wähle den Song mit Linksklick aus.</li>
+                            <li>Klicke auf <span class="track-title">Drucken</span>.</li>
+                            <li><span class="track-title">Habe Geduld</span>.</li>
+                            <li>Schneide den Sticker mit einer Schere ab und kleben ihn auf einen bunten Zettel.</li>
+                            <li>
+                                Schreibe auf die <span class="track-title">Rückseite</span> 
+                                Interpreten, Jahr und Titel.
+                                Du kannst gerne auch auf der Rückseite unterscheiben.
+                                <span class="track-title">Wichtig:</span> Das Jahr ist 
+                                nicht immer korrekt. Sollte es Dir seltsam vorkommen,
+                                überprüfe es mit Google. 
+                            </li>
+                        </ol>                          
+                    </p>
             </div>
         </div>
     </div>
 
-    <!-- Popup-Fenster -->
-    <div id="popup" class="popup">
-        <span class="close" id="close-popup">&times;</span>
-        <div id="popup-content"></div>
-        <button id="print-btn">Drucken</button>
+    <!-- track_preview-Fenster -->
+    <div id="track_preview-popup" class="popup">
+        <span class="close" id="track_preview-close-popup">&times;</span>
+        <div id="track_preview-content"></div>
     </div>
 
-    <!-- Overlay für Popup -->
-    <div id="overlay" class="overlay"></div>
+    <!-- Overlay für track_preview-Popup -->
+    <div id="track_preview-overlay" class="overlay"></div>
+
+    <!-- after_print--Fenster -->
+    <div id="after_print_popup" class="popup">
+        <span class="close" id="after_print_close-popup">&times;</span>
+        <div id="after_print-content"></div>
+    </div>
+
+    <!-- Overlay für after_print-Popup -->
+    <div id="after_print-overlay" class="overlay"></div>
+
+
+
 
     <script>
         document.getElementById('submit-btn').addEventListener('click', submitInput);
@@ -247,33 +307,151 @@
                         <div class="track-info">${track.release_year}</div>
                     `;
                     listItem.addEventListener('click', () => {
-                        openPopup(track);
+                        openTrackPreview(track);
                     });
                     musicList.appendChild(listItem);
                 });
+        // Delay the scroll reset slightly to ensure it occurs after the content update
+                setTimeout(() => {
+                    musicList.scrollTop = 0; // Reset the scrollbar to the top
+                }, 10); // Delay of 0ms ensures it happens after DOM update
             });
         }
 
-        function openPopup(track) {
-            document.getElementById('popup-content').innerHTML = `
+        function openTrackPreview(track) {
+            document.getElementById('track_preview-content').innerHTML = `
                 <img src="${track.album_cover_url}" alt=" ">
                 <div class="track-title">${track.title}</div>
                 <div class="track-info">Interpret: ${track.artist}</div>
                 <div class="track-info">Album: ${track.album}</div>
                 <div class="track-info">Jahr: ${track.release_year}</div>
+                <button id="print-btn">Drucken</button>
             `;
-            document.getElementById('popup').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('track_preview-popup').style.display = 'block';
+            document.getElementById('track_preview-overlay').style.display = 'block';
+        
+            // Set the event listener for the "Drucken" button and pass the `track` variable
+            document.getElementById('print-btn').addEventListener('click', () => {
+                
+                const printButton = document.getElementById('print-btn');
+                printButton.innerHTML = "Warten...";
+                printButton.style.backgroundColor = "red";
+                printButton.style.color = "white"; // Optional: Change text color to white
+            
+                catprint(track);  // Call catprint when the button is clicked
+            });
         }
 
-        document.getElementById('close-popup').addEventListener('click', function() {
-            document.getElementById('popup').style.display = 'none';
-            document.getElementById('overlay').style.display = 'none';
+        document.getElementById('track_preview-close-popup').addEventListener('click', function() {
+            document.getElementById('track_preview-popup').style.display = 'none';
+            document.getElementById('track_preview-overlay').style.display = 'none';
         });
 
-        document.getElementById('print-btn').addEventListener('click', function() {
-            alert('Drucken-Funktion ausgeführt!');
+        document.getElementById('track_preview-overlay').addEventListener('click', function() {
+            document.getElementById('track_preview-popup').style.display = 'none';
+            document.getElementById('track_preview-overlay').style.display = 'none';
         });
+
+
+        function catprint(track) {
+
+            fetch('/catprint', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    uri: track.uri,
+                    title: track.title,
+                    album: track.album,
+                    release_year: track.release_year,
+                    artist: track.artist
+                }),
+            })
+            .then(response => response.json()) // Parse the JSON response
+            .then(data => {
+                // Use the received data to open a new popup
+                openResponsePopup(data); // Assuming you have a function to handle opening the popup with response data
+
+                // After handling the response, revert the button's color and text
+                // const printButton = document.getElementById('print-btn');
+                // printButton.innerHTML = "Drucken";
+                // printButton.style.backgroundColor = "#1DB954"; // Original color
+                // printButton.style.color = "white"; // Original text color
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function openResponsePopup(data) {
+            // Create and display your popup here using the `data` from the response
+
+
+            let message;
+            switch (data.status_code) {
+                case 200: // Erfolgreicher Druck
+                    document.getElementById('track_preview-content').innerHTML = `
+                        <div class="track-title">Fertig gedruckt.</div>
+                        <img src="{{ url_for('static', filename='images/ready.png') }}" alt=" ">                        
+                        <div class="track-info">Schneide den Sticker ab und klebe ihn auf eine Karte.</div>
+                        <div class="track-info">Schreibe auf die Rückseite Titel, Interpreten und Jahr \n.</div>
+                        <div class="track-title">Titel: ${data.title}</div>
+                        <div class="track-title">Interpret: ${data.artist}</div>
+                        <div class="track-title">Jahr: ${data.release_year}</div>
+                        `;
+                    break;
+                case 400: // FilenotFound Error
+                    document.getElementById('track_preview-content').innerHTML = `
+                            <div class="track-title">Unerwarteter Fehler 400.</div>                
+                            <div class="track-info">Probiere es nochmal oder hole Hilfe.</div>
+                            `;
+                    break;
+                case 404: // Drucker not found == ausgeschaltet
+                    document.getElementById('track_preview-content').innerHTML = `
+                            <div class="track-title">Der Drucker ist ausgeschaltet.</div>
+                            <img src="{{ url_for('static', filename='images/power.png') }}" alt=" ">                        
+                            <div class="track-info">Halte den seitlichen Knopf für 2 Sekunden gedrückt, bis es oben blau blinkt. Schließe dieses Fenster und probiere es erneut.</div>
+                            `;               
+                    break;
+                case 402: // Unknown
+                    document.getElementById('track_preview-content').innerHTML = `
+                            <div class="track-title">Unerwarteter Fehler 402.</div>                
+                            <div class="track-info">Probiere es nochmal oder hole Hilfe.</div>
+                            `;
+                    break;
+                case 403: //SongTwice
+                    document.getElementById('track_preview-content').innerHTML = `
+                                <div class="track-title">Zu spät.</div>                
+                                <div class="track-info">Der Song wurde bereits gedruckt. Suche einen Neuen.</div>
+                                `;
+                    break;
+                case 401: // OutOfPaper
+                    document.getElementById('track_preview-content').innerHTML = `
+                            <div class="track-title">Der Drucker hat kein Papier mehr.</div>     
+                            <img src="{{ url_for('static', filename='images/paper.png') }}" alt=" ">                                   
+                            <div class="track-info">Drücke den seitlichen Knopf, um den Drucker zu öffnen.</div>
+                            <div class="track-info">Setze eine neue Rolle richtig herum in den Drucker ein. Schließe dieses Fenster und probiere es erneut.</div>
+                            `; 
+                    break;
+                case 407: // RunTimeError
+                    document.getElementById('track_preview-content').innerHTML = `
+                            <div class="track-title">Unerwarteter Fehler 407.</div>                
+                            <div class="track-info">Probiere es nochmal oder hole Hilfe.</div>
+                            `;
+                    break;
+                case 408: // Download Error
+                    document.getElementById('track_preview-content').innerHTML = `
+                            <div class="track-title">Netzwerkprobleme: 408.</div>                
+                            <div class="track-info">Probiere es nochmal oder hole Hilfe.</div>
+                            `;
+                    break;
+                default:
+                    message = `Unexpected status code: ${data.status_code}`;
+            }
+        }
+
+
     </script>
 </body>
 </html>
