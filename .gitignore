@@ -4,3 +4,4 @@ test2.py
 example_search_response.json
 Downloads/*
 __pycache__/*
+*.DS_Store
