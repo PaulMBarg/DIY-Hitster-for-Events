@@ -1,3 +1,5 @@
+Based on [Spotify Code One-Click](https://github.com/PaulMBarg/Spotify-Code-OneClick/blob/main/README.md?plain=1) and [catprinter](https://github.com/NaitLee/Cat-Printer).
+
 # DIY Hitster for Events
 
 This repo helps you create a personilzed version of the popular music game Hasbro. It hosts a user-interface as web app where guest of the event (e.g. wedding) can create their own Hitster music cards.
